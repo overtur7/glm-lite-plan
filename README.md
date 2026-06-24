@@ -2,133 +2,108 @@
 
 双平台 GLM Coding Plan & 方舟 Coding Plan 的 Lite 连续包年抢购。
 
+**纯 API 模式**：使用 Node.js HTTPS 直接调用接口，无需浏览器，速度更快（80ms/次）。
+
 ## 刷新时间
 
 | 平台 | 刷新时间 | 脚本 |
 |------|----------|------|
-| 火山引擎 方舟 Coding Plan | 每天 **0:00** | `grab-volcengine.js` |
-| 智谱 AI GLM Coding Plan | 每天 **10:00** | `grab-zhipu.js` |
+| 火山引擎 方舟 Coding Plan | 每天 **0:00** | `grab-volcengine-api.js` |
+| 智谱 AI GLM Coding Plan | 每天 **10:00** | `grab-zhipu-api.js` |
 
 ## 快速开始
 
 ```bash
-cd grab-glm-lite-plan
-npm run setup     # 安装依赖 + Chromium
-npm start         # 双平台同时抢（自动倒计时）
+# 1. 安装依赖
+npm install
+
+# 2. 提取认证信息（首次使用，每个平台只需运行一次）
+npm run setup:volc    # 火山引擎 - 打开浏览器手动登录后自动提取
+npm run setup:zhipu   # 智谱 AI - 打开浏览器手动登录后自动提取
+
+# 3. 运行抢购
+npm start             # 双平台同时抢（自动倒计时）
 ```
 
 ## 命令一览
 
 ```bash
-npm start            # 双平台同时抢（推荐，自动倒计时）
+# API 模式（推荐，默认）
+npm start            # 双平台同时抢（自动倒计时）
 npm run zhipu        # 只抢智谱（倒计时到 10:00）
 npm run volc         # 只抢火山（倒计时到 0:00）
 npm run now          # 跳过倒计时，立即开始双平台
 npm run now:zhipu    # 立即开始 + 只抢智谱
 npm run now:volc     # 立即开始 + 只抢火山
+
+# 浏览器模式（备用）
+npm run start:click  # 双平台浏览器模式
 ```
-
-## 使用步骤
-
-1. 运行命令后，脚本自动**倒计时到开抢时刻**
-2. 倒计时结束后自动打开浏览器
-3. **手动登录**对应平台账号（有验证码无法自动化）
-4. 登录完成后，回到终端按 **Enter**
-5. 脚本自动循环点击 Lite 订阅按钮
-6. 检测到支付页面后提示成功，**手动完成支付**
 
 ## 工作原理
 
 ```
-启动 → 倒计时到开抢时刻 → 提前 500ms 打开浏览器
-→ 用户手动登录 → 切换到连续包年
-→ 高频循环(300ms)点击 Lite「订阅」按钮
-→ 检测到跳转支付页面 → 成功！
+1. 首次运行 setup 脚本 → 打开浏览器手动登录 → 自动提取认证信息保存到本地
+2. 后续运行 npm start → 读取本地认证 → 倒计时到开抢时刻
+3. 纯 HTTP 请求调用订阅 API（80ms 间隔，比浏览器快 4 倍）
+4. 检测到库存不足 → 继续抢
+5. 检测到订单创建成功 → 提示完成支付
 ```
 
 ## 文件结构
 
 ```
 grab-glm-lite-plan/
-├── grab-all.js           # 主入口（双平台）
-├── grab-zhipu.js         # 智谱抢购模块
-├── grab-volcengine.js    # 火山抢购模块
-├── lib/common.js         # 公共工具库
-├── screenshots/          # 自动截图
-│   ├── zhipu/
-│   └── volcengine/
+├── grab-all.js              # 主入口
+├── grab-volcengine-api.js   # 火山纯 API 抢购
+├── grab-zhipu-api.js        # 智谱纯 API 抢购
+├── volcengine-setup.js      # 火山认证提取（一次性）
+├── zhipu-setup.js           # 智谱认证提取（一次性）
+├── lib/common.js            # 公共工具库
+├── .auth/                   # 认证信息（已 gitignore）
+│   ├── volcengine-cookies.json
+│   └── zhipu-cookies.json
 └── package.json
 ```
 
-## 注意事项
+## 认证说明
 
-1. 启动 Chromium 浏览器（非无头模式，方便手动登录）
-2. 导航到 GLM Coding 订阅页面
-3. **等待用户手动登录**（页面有腾讯验证码，无法自动化登录）
-4. 登录完成后，自动切换到「连续包年」标签
-5. 循环查找并点击 Lite 套餐的「特惠订阅」按钮
-6. 检测到跳转到支付页面即视为成功
-
-## 快速开始
+API 模式需要先提取认证信息，每个平台**首次使用时运行一次**：
 
 ```bash
-# 1. 进入目录
-cd grab-glm-lite-plan
+# 火山引擎
+npm run setup:volc
+# → 打开浏览器 → 手动登录 → 自动提取 cookies → 保存到 .auth/volcengine-cookies.json
 
-# 2. 一键安装依赖 + 浏览器
-npm run setup
-
-# 3. 运行抢购
-npm start
+# 智谱 AI
+npm run setup:zhipu
+# → 打开浏览器 → 手动登录 → 自动探测 API → 保存到 .auth/zhipu-cookies.json
 ```
 
-## 使用步骤
-
-1. 运行脚本后，浏览器会自动打开智谱订阅页面
-2. **在浏览器中手动登录**你的智谱账号
-3. 如果需要实名认证，请先完成认证
-4. 登录完成后，回到**终端按 Enter 键**
-5. 脚本开始自动抢购，循环点击订阅按钮
-6. 检测到支付页面后会通知你
-7. **手动完成支付**
+**注意**：Cookies 会在数小时后过期，如果遇到认证失效错误，重新运行 setup 脚本即可。
 
 ## 配置项
 
-通过环境变量调整参数：
-
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `GRAB_INTERVAL` | `500` | 每次抢购间隔（毫秒） |
-| `GRAB_TIMEOUT` | `300` | 抢购超时时间（秒），默认5分钟 |
-| `HEADLESS` | `false` | 是否无头模式（调试用） |
+| `GRAB_INTERVAL` | `80` | 每次抢购间隔（毫秒） |
+| `GRAB_TIMEOUT` | `300` | 抢购超时时间（秒） |
 
 示例：
 ```bash
-# 每200ms尝试一次，超时10分钟
-set GRAB_INTERVAL=200
+# 每 50ms 尝试一次，超时 10 分钟
+set GRAB_INTERVAL=50
 set GRAB_TIMEOUT=600
 npm start
 ```
 
-## 截图
-
-脚本运行过程中会自动截图保存到 `./screenshots/` 目录，方便排查问题：
-
-- `01-initial.png` — 初始页面
-- `02-logged-in.png` — 登录后
-- `03-annual-selected.png` — 选择连续包年后
-- `04-attempt-N.png` — 每次抢购尝试
-- `05-success.png` — 成功截图
-
 ## 注意事项
 
-⚠️ **登录需手动完成**：两个平台都有验证码，无法自动化登录
+⚠️ **认证提取需手动登录**：两个平台都有验证码，setup 脚本会打开浏览器让你手动登录
 
-⚠️ **智谱需实名认证**：页面提示「实名认证后方可抢购」
+⚠️ **Cookies 会过期**：如果遇到"未授权"或"NotLogin"错误，重新运行 setup 脚本
 
-⚠️ **提前登录**：可以在倒计时结束前提前登录，脚本会在开抢后刷新确认状态
-
-⚠️ **双平台同时抢**：会打开两个浏览器窗口，分别对应两个平台
+⚠️ **提前运行**：可以在开抢前运行，脚本会自动倒计时等待
 
 ⚠️ **网络环境**：建议在稳定的网络环境下运行
 
@@ -136,7 +111,7 @@ npm start
 
 | 问题 | 解决方案 |
 |------|----------|
-| `npx playwright install` 失败 | 检查网络，或手动下载 Chromium |
-| 找不到订阅按钮 | 查看截图确认页面状态 |
-| 一直提示"按钮不可用" | 可能需要先完成实名认证 |
+| `NotLogin: Not logged in` | 重新运行 `npm run setup:volc` |
+| `未知错误` | 检查 cookies 是否过期，重新运行 setup |
+| `npm install` 失败 | 检查 Node.js 版本（推荐 v16+） |
 | 脚本无响应 | 按 `Ctrl+C` 终止 |
