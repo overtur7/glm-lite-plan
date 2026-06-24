@@ -1,0 +1,21 @@
+{
+  "name": "grab-coding-plan-lite",
+  "version": "2.0.0",
+  "description": "智谱GLM & 火山方舟 Coding Plan Lite 抢购脚本",
+  "main": "grab-all.js",
+  "scripts": {
+    "start": "node grab-all.js --api",
+    "start:click": "node grab-all.js",
+    "zhipu": "node grab-all.js zhipu --api",
+    "volc": "node grab-all.js volcengine --api",
+    "now": "node grab-all.js --api --now",
+    "now:zhipu": "node grab-all.js zhipu --api --now",
+    "now:volc": "node grab-all.js volcengine --api --now",
+    "setup:zhipu": "node zhipu-setup.js",
+    "setup:volc": "node volcengine-setup.js",
+    "setup": "npm install && npx playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.37.0"
+  }
+}
