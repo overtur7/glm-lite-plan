@@ -13,7 +13,11 @@
     "now:volc": "node grab-all.js volcengine --api --now",
     "setup:zhipu": "node zhipu-setup.js",
     "setup:volc": "node volcengine-setup.js",
-    "setup": "npm install && npx playwright install chromium"
+    "setup": "npm install && npx playwright install chromium",
+    "faucet": "node freetokenfaucet-claim.js",
+    "faucet:refresh": "node freetokenfaucet-claim.js --refresh",
+    "faucet:browser": "node freetokenfaucet-claim-browser.js",
+    "faucet:auto": "node freetokenfaucet-claim-browser.js --headless"
   },
   "dependencies": {
     "playwright": "^1.37.0"
